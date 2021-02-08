@@ -133,6 +133,14 @@ impl Error<NoSync> {
             None
         }
     }
+
+    #[inline]
+    pub fn into_inner_send(self) -> Box<dyn StdError + Send> {
+        // SAFETY: Ensure real implement Send with tag
+        unsafe {
+            Box::from_raw(Box::into_raw(self.real) as *mut (dyn StdError + Send))
+        }
+    }
 }
 
 impl Error<SendSync> {
@@ -142,6 +150,14 @@ impl Error<SendSync> {
             impl_send: true,
             impl_sync: true,
             _tag: PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn into_inner_sync(self) -> Box<dyn StdError + Send + Sync> {
+        // SAFETY: Ensure real implement Send + Sync with tag
+        unsafe {
+            Box::from_raw(Box::into_raw(self.real) as *mut (dyn StdError + Send + Sync))
         }
     }
 }
